@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babd Idea - Platforma Zgłaszania Pomysłów na Kryptowaluty</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for Inter font and general aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light gray background */
+            color: #334155; /* Darker gray text */
+        }
+        .container {
+            max-width: 960px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1rem; /* Rounded corners */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+        .btn-primary {
+            background-color: #4f46e5; /* Indigo */
+            color: #ffffff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca; /* Darker indigo on hover */
+        }
+        .input-field {
+            border: 1px solid #cbd5e1; /* Light gray border */
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+        }
+        .idea-item {
+            border-bottom: 1px solid #e2e8f0; /* Lighter gray for separators */
+        }
+        .idea-item:last-child {
+            border-bottom: none;
+        }
+        /* Styles for the ban message overlay */
+        .ban-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Dark overlay */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Ensure it's on top */
+            color: white;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .ban-overlay img {
+            max-width: 80%;
+            height: auto;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        .wallet-address {
+            font-size: 0.9rem;
+            color: #64748b; /* Slate gray */
+            margin-top: 0.5rem;
+            word-break: break-all; /* Allow long addresses to wrap */
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="container mx-auto mt-8 p-6 card">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-extrabold text-indigo-700 mb-2">Babd Idea</h1>
+            <p class="text-xl text-gray-600">Platforma do zgłaszania pomysłów na kryptowaluty</p>
+            <div class="mt-4 flex flex-col items-center space-y-2">
+                <button id="connect-wallet-btn" class="btn-primary">Połącz Portfel</button>
+                <div id="wallet-info" class="flex flex-col items-center space-y-1">
+                    <p class="text-lg text-gray-700">ETH: <span id="eth-balance">0.00</span></p>
+                    <p class="text-lg text-gray-700">BABD-Koin: <span id="babd-koin-balance">0.00</span></p>
+                    <p id="wallet-address" class="wallet-address hidden"></p>
+                </div>
+            </div>
+        </header>
+
+        <section class="mb-10 p-6 card">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Zgłoś Swój Pomysł</h2>
+            <form id="idea-form" class="space-y-6">
+                <div>
+                    <label for="idea-title" class="block text-lg font-medium text-gray-700 mb-2">Tytuł Pomysłu</label>
+                    <input type="text" id="idea-title" class="input-field" placeholder="Np. Decentralizowana giełda NFT" required>
+                </div>
+                <div>
+                    <label for="idea-description" class="block text-lg font-medium text-gray-700 mb-2">Opis Pomysłu</label>
+                    <textarea id="idea-description" rows="5" class="input-field" placeholder="Szczegółowy opis Twojego pomysłu..." required></textarea>
+                </div>
+                <div>
+                    <label for="associated-coin" class="block text-lg font-medium text-gray-700 mb-2">Powiązana Moneta/Token</label>
+                    <select id="associated-coin" class="input-field" required>
+                        <option value="">Wybierz...</option>
+                        <option value="ETH">Ethereum (ETH)</option>
+                        <option value="BABD-Koin">BABD-Koin</option>
+                        <option value="Inne">Inne</option>
+                    </select>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="non-ai-generated" class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                    <label for="non-ai-generated" class="ml-2 block text-lg text-gray-900">Mój pomysł nie został wygenerowany przez AI</label>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn-primary font-semibold text-xl">Zgłoś Pomysł</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="p-6 card">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Zgłoszone Pomysły</h2>
+            <div id="ideas-list" class="space-y-6">
+                <!-- Ideas will be dynamically added here -->
+                <div class="idea-item p-4 rounded-lg bg-gray-50">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Platforma Pożyczek DeFi</h3>
+                    <p class="text-gray-700 mb-3">Zdecentralizowana platforma pożyczkowa, która wykorzystuje inteligentne kontrakty do automatyzacji procesów pożyczkowych i zapewnienia przejrzystości.</p>
+                    <p class="text-sm text-gray-500">Powiązana Moneta: ETH</p>
+                    <p class="text-xs text-gray-400">Status: Zweryfikowany jako nie-AI</p>
+                </div>
+                <div class="idea-item p-4 rounded-lg bg-gray-50">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">System Głosowania DAO</h3>
+                    <p class="text-gray-700 mb-3">System zarządzania DAO oparty na BABD-Koin, umożliwiający posiadaczom tokenów głosowanie nad propozycjami i kierunkiem rozwoju projektu.</p>
+                    <p class="text-sm text-gray-500">Powiązana Moneta: BABD-Koin</p>
+                    <p class="text-xs text-gray-400">Status: Zweryfikowany jako nie-AI</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ideaForm = document.getElementById('idea-form');
+            const ideasList = document.getElementById('ideas-list');
+            const ethBalanceSpan = document.getElementById('eth-balance');
+            const babdKoinBalanceSpan = document.getElementById('babd-koin-balance');
+            const nonAiGeneratedCheckbox = document.getElementById('non-ai-generated');
+            const connectWalletBtn = document.getElementById('connect-wallet-btn');
+            const walletAddressSpan = document.getElementById('wallet-address');
+
+            // Initialize balances
+            let ethBalance = parseFloat((Math.random() * 10 + 0.5).toFixed(2)); // Random ETH between 0.5 and 10.5
+            let babdKoinBalance = parseFloat((Math.random() * 1000 + 50).toFixed(2)); // Random BABD-Koin between 50 and 1050
+            let isWalletConnected = false;
+            let currentWalletAddress = '';
+
+            // Update display
+            ethBalanceSpan.textContent = ethBalance.toFixed(2);
+            babdKoinBalanceSpan.textContent = babdKoinBalance.toFixed(2);
+
+            // Function to display a temporary message
+            function showMessageBox(message, type = 'red') {
+                const messageBox = document.createElement('div');
+                messageBox.className = `fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-${type}-500 text-white p-4 rounded-lg shadow-lg z-50`;
+                messageBox.textContent = message;
+                document.body.appendChild(messageBox);
+                setTimeout(() => {
+                    messageBox.remove();
+                }, 3000); // Remove message after 3 seconds
+            }
+
+            // Function to display the ban message
+            function showBanMessage() {
+                const banOverlay = document.createElement('div');
+                banOverlay.className = 'ban-overlay';
+                // Placeholder image for Elon Musk. In a real app, you'd use a proper image URL.
+                banOverlay.innerHTML = `
+                    <img src="https://placehold.co/400x200/FF0000/FFFFFF?text=YOU+ARE+FIRED!+-+Elon+Musk" alt="You are fired!">
+                    <p class="text-white text-5xl font-bold">YOU ARE FIRED!</p>
+                    <p class="text-white text-2xl mt-4">Your funds have been reset.</p>
+                `;
+                document.body.appendChild(banOverlay);
+
+                // Disable further interactions on the page
+                document.body.style.pointerEvents = 'none';
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Function to simulate connecting to a wallet
+            function connectWallet() {
+                if (isWalletConnected) {
+                    showMessageBox('Portfel jest już połączony!', 'blue');
+                    return;
+                }
+
+                // Simulate a delay for connection
+                showMessageBox('Łączenie z portfelem...', 'blue');
+                setTimeout(() => {
+                    // Generate a mock wallet address
+                    const mockAddress = '0x' + Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+                    currentWalletAddress = mockAddress;
+                    isWalletConnected = true;
+
+                    // Update UI
+                    connectWalletBtn.textContent = 'Połączono';
+                    connectWalletBtn.disabled = true; // Disable button after connection
+                    walletAddressSpan.textContent = `Adres portfela: ${currentWalletAddress.substring(0, 6)}...${currentWalletAddress.substring(currentWalletAddress.length - 4)}`;
+                    walletAddressSpan.classList.remove('hidden');
+
+                    // Simulate fetching new balances from the connected wallet
+                    ethBalance = parseFloat((Math.random() * 15 + 1).toFixed(2)); // More ETH after connection
+                    babdKoinBalance = parseFloat((Math.random() * 2000 + 100).toFixed(2)); // More BABD-Koin after connection
+                    ethBalanceSpan.textContent = ethBalance.toFixed(2);
+                    babdKoinBalanceSpan.textContent = babdKoinBalance.toFixed(2);
+
+                    showMessageBox('Portfel połączony pomyślnie!', 'green');
+
+                    // In a real application, you would use Web3.js or Ethers.js here:
+                    // if (window.ethereum) {
+                    //     try {
+                    //         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    //         currentWalletAddress = accounts[0];
+                    //         // Fetch balance using web3.eth.getBalance(currentWalletAddress)
+                    //         // Update UI
+                    //     } catch (error) {
+                    //         console.error("User denied account access or other error:", error);
+                    //         showMessageBox('Błąd połączenia z portfelem.', 'red');
+                    //     }
+                    // } else {
+                    //     showMessageBox('Proszę zainstalować MetaMask lub inny portfel Web3.', 'red');
+                    // }
+
+                }, 1500); // Simulate 1.5 second connection time
+            }
+
+            // Event listener for the connect wallet button
+            connectWalletBtn.addEventListener('click', connectWallet);
+
+            ideaForm.addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent default form submission
+
+                const title = document.getElementById('idea-title').value;
+                const description = document.getElementById('idea-description').value;
+                const associatedCoin = document.getElementById('associated-coin').value;
+                const isNonAiGenerated = nonAiGeneratedCheckbox.checked;
+
+                if (!isWalletConnected) {
+                    showMessageBox('Proszę najpierw połączyć portfel!', 'red');
+                    return;
+                }
+
+                if (title && description && associatedCoin) {
+                    if (!isNonAiGenerated) {
+                        // User did not check "non-AI generated" - trigger ban
+                        ethBalance = 0.00;
+                        babdKoinBalance = 0.00;
+                        ethBalanceSpan.textContent = ethBalance.toFixed(2);
+                        babdKoinBalanceSpan.textContent = babdKoinBalance.toFixed(2);
+                        showBanMessage();
+                        return; // Stop further processing
+                    }
+
+                    // Calculate rewards based on description length
+                    const descriptionLength = description.length;
+                    let earnedBabd = 10.00; // Base BABD-Koin reward
+                    let earnedEth = 0.00;   // Base ETH reward
+
+                    // Bonus BABD-Koin for longer descriptions
+                    const babdBonusThreshold = 100; // Minimum characters for bonus
+                    const babdBonusPerChar = 0.1; // 1 BABD-Koin for every 10 characters over threshold
+                    if (descriptionLength > babdBonusThreshold) {
+                        earnedBabd += ((descriptionLength - babdBonusThreshold) * babdBonusPerChar);
+                    }
+
+                    // ETH reward for very long descriptions
+                    const ethRewardThreshold = 300; // Characters needed for ETH reward
+                    const fixedEthReward = 0.01;
+                    if (descriptionLength >= ethRewardThreshold) {
+                        earnedEth = fixedEthReward;
+                    }
+
+                    // Update balances
+                    babdKoinBalance += earnedBabd;
+                    ethBalance += earnedEth;
+
+                    babdKoinBalanceSpan.textContent = babdKoinBalance.toFixed(2);
+                    ethBalanceSpan.textContent = ethBalance.toFixed(2);
+
+                    const newIdeaItem = document.createElement('div');
+                    newIdeaItem.className = 'idea-item p-4 rounded-lg bg-gray-50';
+
+                    let rewardMessage = `Zarobiono ${earnedBabd.toFixed(2)} BABD-Koin`;
+                    if (earnedEth > 0) {
+                        rewardMessage += ` oraz ${earnedEth.toFixed(2)} ETH`;
+                    }
+                    const statusText = `<p class="text-xs text-gray-400">Status: Zweryfikowany jako nie-AI (${rewardMessage})</p>`;
+
+                    // Show a temporary message for earning rewards
+                    showMessageBox(`Gratulacje! ${rewardMessage} za zgłoszenie nie-AI pomysłu.`, 'green');
+
+                    newIdeaItem.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">${title}</h3>
+                        <p class="text-gray-700 mb-3">${description}</p>
+                        <p class="text-sm text-gray-500">Powiązana Moneta: ${associatedCoin}</p>
+                        ${statusText}
+                    `;
+                    ideasList.prepend(newIdeaItem); // Add new idea to the top of the list
+
+                    // Clear the form
+                    ideaForm.reset();
+                } else {
+                    // Simple message box for incomplete form
+                    showMessageBox('Proszę wypełnić wszystkie pola formularza.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
